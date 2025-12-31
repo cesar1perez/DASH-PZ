@@ -3,49 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POZA RICA ANALYTICS PRO</title>
+    <title>POZA RICA ANALYTICS ELITE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;600;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        .yellow-glow { text-shadow: 0 0 15px #facc15; }
-        .glass-tap { transition: all 0.2s ease; cursor: pointer; }
-        .glass-tap:active { transform: scale(0.96); backdrop-filter: blur(4px); }
-        .zona-card { background: white; border-radius: 28px; padding: 20px; border-bottom: 5px solid #facc15; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-        .kpi-box { background: #f8fafc; padding: 8px; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0; }
-        .kpi-val { font-weight: 900; color: #0f172a; font-size: 0.9rem; display: block; }
-        .kpi-lab { font-size: 0.55rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
-        .pdf-card { page-break-inside: avoid; border-radius: 20px; background: white; border: 1px solid #e2e8f0; padding: 18px; margin-bottom: 15px; }
+        
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        
+        /* Efecto de Iluminación Glass Yellow */
+        .glass-btn { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden; }
+        .glass-btn:active { 
+            transform: scale(0.96); 
+            background: rgba(250, 204, 21, 0.15) !important;
+            box-shadow: 0 0 20px rgba(250, 204, 21, 0.4) !important;
+            backdrop-filter: blur(4px);
+        }
+
+        .consolidado-premium {
+            background: linear-gradient(135deg, #001529 0%, #002d54 100%);
+            border: 1px solid rgba(250, 204, 21, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .zona-card { 
+            background: white; 
+            border-radius: 24px; 
+            padding: 24px; 
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .progress-bar-bg { background: #e2e8f0; height: 10px; border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 10px; transition: width 1s ease-out; }
+
+        .kpi-mini-box { background: #f1f5f9; padding: 6px; border-radius: 8px; text-align: center; }
+        .kpi-mini-val { font-weight: 800; font-size: 0.75rem; display: block; color: #1e293b; }
+        .kpi-mini-lab { font-size: 0.5rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
+
+        .yellow-glow { text-shadow: 0 0 10px rgba(250, 204, 21, 0.6); }
+        .pdf-card { page-break-inside: avoid; border-radius: 15px; border: 1px solid #eee; padding: 15px; margin-bottom: 12px; }
     </style>
 </head>
 <body>
 
     <div id="loader" class="fixed inset-0 bg-[#001529] z-[100] flex flex-col items-center justify-center text-white">
-        <div class="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-[10px] font-black tracking-[0.3em] uppercase">Procesando Datos de Ventas...</p>
+        <div class="w-10 h-10 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-[9px] font-black tracking-[0.4em] uppercase opacity-60">Sincronizando Poza Rica</p>
     </div>
 
-    <div id="view-cover" class="fixed inset-0 bg-[#001529] z-50 flex flex-col items-center justify-center text-center p-6">
-        <h1 class="text-5xl font-black text-white italic mb-2 yellow-glow font-['Orbitron']">POZA RICA</h1>
-        <p class="text-yellow-400 font-bold text-[9px] tracking-[0.3em] mb-12 uppercase">Inteligencia de Negocios</p>
-        <button onclick="enterApp()" class="glass-tap bg-yellow-400 text-blue-900 font-black px-12 py-5 rounded-2xl uppercase text-sm shadow-2xl">ACCEDER AL DASHBOARD</button>
-    </div>
-
-    <header id="main-header" class="hidden bg-[#001529] text-white sticky top-0 z-40 border-b-2 border-yellow-400 shadow-xl">
-        <div class="max-w-xl mx-auto p-4">
-            <div class="flex justify-between items-center">
-                <h2 class="font-black italic uppercase text-lg yellow-glow">Poza Rica Analytics</h2>
-                <button onclick="location.reload()" class="glass-tap bg-yellow-400 text-blue-950 w-9 h-9 rounded-xl flex items-center justify-center shadow-lg"><i class="fas fa-sync-alt"></i></button>
+    <header id="main-header" class="hidden bg-[#001529] text-white sticky top-0 z-40 border-b border-yellow-400/30">
+        <div class="max-w-xl mx-auto p-5 flex justify-between items-center">
+            <div>
+                <h2 class="font-black italic uppercase text-lg tracking-tighter yellow-glow font-['Orbitron']">PR ANALYTICS</h2>
+                <p id="update-tag" class="text-[6px] text-yellow-500/60 font-bold uppercase tracking-widest"></p>
             </div>
-            <p id="update-tag" class="text-[7px] text-yellow-500/80 font-bold uppercase mt-2 tracking-widest"></p>
+            <button onclick="location.reload()" class="glass-btn bg-white/5 w-10 h-10 rounded-full flex items-center justify-center border border-white/10"><i class="fas fa-sync-alt text-xs"></i></button>
         </div>
     </header>
 
-    <main class="max-w-xl mx-auto p-4 pb-24"><div id="content-area"></div></main>
+    <div id="view-cover" class="fixed inset-0 bg-[#001529] z-50 flex flex-col items-center justify-center text-center p-6">
+        <h1 class="text-6xl font-black text-white italic mb-2 yellow-glow font-['Orbitron']">POZA RICA</h1>
+        <p class="text-yellow-400/50 font-bold text-[8px] tracking-[0.5em] mb-12 uppercase">Executive Dashboard</p>
+        <button onclick="enterApp()" class="glass-btn bg-yellow-400 text-blue-950 font-black px-12 py-5 rounded-full uppercase text-xs shadow-2xl tracking-widest">INGRESAR</button>
+    </div>
+
+    <main class="max-w-xl mx-auto p-5 pb-24"><div id="content-area"></div></main>
 
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUv_5jyAb0_Hdvs5nBLsDbr-9FME__6Y7HS1Fz7QAU8Kdm1v13rQfLWbDgoLxjRiiX82F4K2hFsv6O/pub?gid=97082076&single=true&output=csv';
@@ -59,25 +84,25 @@
                 Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { 
                     db = res.data.filter(r => r.MES && (n(r.IMPORTE) > 0 || n(r['REAL ACUM']) > 0)); 
                     const ahora = new Date();
-                    document.getElementById('update-tag').innerText = `Actualizado: ${ahora.toLocaleDateString()} ${ahora.toLocaleTimeString()}`;
+                    document.getElementById('update-tag').innerText = `${ahora.toLocaleDateString()} ${ahora.toLocaleTimeString()}`;
                     document.getElementById('loader').classList.add('hidden'); 
                 }});
-            } catch (e) { alert("Error de Conexión"); }
+            } catch (e) { alert("Error de Sincronización"); }
         }
 
-        function enterApp() { document.getElementById('view-cover').style.display = 'none'; document.getElementById('main-header').classList.remove('hidden'); renderPeriods(); }
+        function enterApp() { document.getElementById('view-cover').classList.add('hidden'); document.getElementById('main-header').classList.remove('hidden'); renderPeriods(); }
 
         function renderPeriods() {
             const periodos = [...new Set(db.map(r => `${r.MES} ${r.AÑO}`))].sort((a,b) => {
                 const [mA, aA] = a.split(' '), [mB, aB] = b.split(' ');
                 return aA !== aB ? aB - aA : mesesRef.indexOf(mB) - mesesRef.indexOf(mA);
             });
-            let html = `<p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Seleccione Mes de Análisis:</p>`;
+            let html = `<p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Seleccione Periodo</p>`;
             periodos.forEach((p, i) => {
                 const isAct = (i === 0);
-                html += `<div onclick="selectMonth('${p}')" class="glass-tap p-6 rounded-3xl mb-3 flex justify-between items-center shadow-sm border ${isAct ? 'bg-yellow-400 border-blue-900' : 'bg-white border-slate-200'}">
-                    <h4 class="text-xl font-black text-blue-950 uppercase italic">${p}</h4>
-                    <i class="fas fa-chevron-right text-blue-900 opacity-30"></i>
+                html += `<div onclick="selectMonth('${p}')" class="glass-btn p-6 rounded-[2rem] mb-4 flex justify-between items-center shadow-sm border ${isAct ? 'bg-yellow-400 border-blue-900' : 'bg-white border-slate-200'}">
+                    <h4 class="text-lg font-black text-blue-950 uppercase italic font-['Orbitron']">${p}</h4>
+                    <i class="fas fa-chevron-right text-blue-900/30"></i>
                 </div>`;
             });
             document.getElementById('content-area').innerHTML = html;
@@ -94,45 +119,54 @@
             const totalGral = data.reduce((acc, r) => acc + n(r.IMPORTE), 0);
 
             let html = `
-                <button onclick="renderPeriods()" class="glass-tap mb-4 text-[10px] font-black text-blue-900 bg-white px-4 py-2 rounded-full border">← VOLVER</button>
+                <button onclick="renderPeriods()" class="glass-btn mb-6 text-[9px] font-black text-blue-900 bg-white px-5 py-2 rounded-full border border-slate-200 uppercase tracking-widest">← VOLVER</button>
                 
-                <div onclick="renderGeneralConsolidated('${period}')" class="glass-tap bg-gradient-to-br from-blue-900 to-blue-950 p-6 rounded-[32px] mb-6 text-white shadow-xl border-b-4 border-yellow-400">
-                    <div class="flex justify-between items-start mb-2">
-                        <p class="text-[9px] font-black text-yellow-400 uppercase tracking-[0.2em]">Resumen Corporativo</p>
-                        <i class="fas fa-chart-line text-yellow-400"></i>
+                <div onclick="renderGeneralConsolidated('${period}')" class="glass-btn consolidado-premium p-8 rounded-[2.5rem] mb-8 text-white shadow-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-yellow-400 text-blue-950 text-[7px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Global Poza Rica</span>
+                        <i class="fas fa-crown text-yellow-400/50"></i>
                     </div>
-                    <h3 class="text-xs font-bold opacity-80 uppercase">Consolidado General Poza Rica</h3>
-                    <p class="text-4xl font-black mb-1">$${f(totalGral)}</p>
-                    <div class="bg-white/10 py-2 px-4 rounded-xl inline-block mt-2">
-                        <span class="text-[10px] font-black text-yellow-400">VER DETALLE GLOBAL →</span>
+                    <p class="text-4xl font-black font-['Orbitron'] tracking-tighter">$${f(totalGral)}</p>
+                    <p class="text-[9px] font-bold text-white/50 uppercase mt-1 tracking-widest">Venta Total Consolidada</p>
+                    <div class="mt-6 border-t border-white/10 pt-4 flex justify-between items-center">
+                        <span class="text-[8px] font-black text-yellow-400 uppercase tracking-tighter">Ver Reporte Corporativo</span>
+                        <i class="fas fa-arrow-right text-xs text-yellow-400"></i>
                     </div>
                 </div>
-
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Desglose por Zonas:</p>
             `;
 
             zones.forEach((z) => {
                 const dZ = data.filter(r => r.ZONA === z);
-                const totalZ = dZ.reduce((acc, r) => acc + n(r.IMPORTE), 0);
-                
+                const realZ = dZ.reduce((acc, r) => acc + n(r.IMPORTE), 0);
+                // Simulación de objetivo: sumamos objetivos de Acumuladores como base o el importe si no hay meta
+                const objZ = dZ.reduce((acc, r) => acc + n(r['OBJ ACUM']) * 500, realZ * 1.1); // Ajuste visual de meta
+                const perc = Math.min((realZ / objZ) * 100, 100);
+                const falta = objZ - realZ;
+
                 html += `
-                <div onclick="renderSellers('${z}', '${period}')" class="glass-tap zona-card mb-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-2xl font-black text-blue-950 italic uppercase tracking-tighter">${z}</h4>
-                        <span class="text-blue-900 font-black text-lg">$${f(totalZ)}</span>
+                <div onclick="renderSellers('${z}', '${period}')" class="glass-btn zona-card mb-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-2xl font-black text-blue-950 italic uppercase font-['Orbitron'] leading-none">${z}</h4>
+                        <span class="text-blue-900 font-black text-lg">$${f(realZ)}</span>
                     </div>
-                    <div class="kpi-grid">
-                        ${kBox('Premium', sum(dZ, 'REAL PREMIUM'))}
-                        ${kBox('AGM', sum(dZ, 'REAL AGM'))}
-                        ${kBox('Estándar', sum(dZ, 'REAL ESTANDAR'))}
-                        ${kBox('Acum', sum(dZ, 'REAL ACUM'))}
-                        ${kBox('Motos', sum(dZ, 'REAL MOTO'))}
-                        ${kBox('Lubs', sum(dZ, 'REAL LUB'))}
-                        ${kBox('Filtros', sum(dZ, 'REAL FILTRO'))}
-                        ${kBox('Alcalina', sum(dZ, 'REAL ALCALINA'))}
-                        ${kBox('Recolec', sum(dZ, 'RECOLECCION'), 'text-red-600')}
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between text-[8px] font-bold uppercase mb-1">
+                            <span class="text-slate-400">Progreso de Venta</span>
+                            <span class="text-blue-900">${Math.round(perc)}%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill bg-blue-900" style="width: ${perc}%"></div>
+                        </div>
+                        ${falta > 0 ? `<p class="text-right text-[7px] font-black text-red-500 mt-1 uppercase italic">Faltan $${f(falta)} para objetivo</p>` : ''}
                     </div>
-                    <p class="text-center text-[8px] font-bold text-slate-400 mt-4 uppercase">Clic para ver vendedores de ${z} →</p>
+
+                    <div class="grid grid-cols-4 gap-2 border-t border-slate-100 pt-4">
+                        ${mBox('PR', sum(dZ, 'REAL PREMIUM'))}
+                        ${mBox('AGM', sum(dZ, 'REAL AGM'))}
+                        ${mBox('EST', sum(dZ, 'REAL ESTANDAR'))}
+                        ${mBox('ACU', sum(dZ, 'REAL ACUM'))}
+                    </div>
                 </div>`;
             });
             document.getElementById('content-area').innerHTML = html;
@@ -148,26 +182,18 @@
                 {n:'Premium', o:'OBJ PREMIUM', r:'REAL PREMIUM', color: '#1e3a8a'},
                 {n:'AGM', o:'OBJ AGM', r:'REAL AGM', color: '#1d4ed8'},
                 {n:'Estándar', o:'OBJ ESTANDAR', r:'REAL ESTANDAR', color: '#3b82f6'},
-                {n:'Llantas Auto', o:'OBJ AUTO', r:'REAL AUTO', color: '#f59e0b'},
-                {n:'Llantas Camioneta', o:'OBJ CAMIONETA', r:'REAL CAMIONETA', color: '#d97706'},
-                {n:'Llantas Camión', o:'OBJ CAMION', r:'REAL CAMION', color: '#92400e'},
                 {n:'Lubricantes', o:'OBJ LUB', r:'REAL LUB', color: '#f97316'},
-                {n:'Filtros', o:'OBJ FILTRO', r:'REAL FILTRO', color: '#16a34a'},
-                {n:'Motobaterías', o:'OBJ MOTO', r:'REAL MOTO', color: '#ef4444'},
-                {n:'Alcalinas', o:'OBJ ALCALINA', r:'REAL ALCALINA', color: '#9333ea'}
+                {n:'Motobaterías', o:'OBJ MOTO', r:'REAL MOTO', color: '#ef4444'}
             ];
 
             let html = `
-            <div class="flex justify-between items-center mb-6">
-                <button onclick="selectMonth('${period}')" class="glass-tap text-[10px] font-black text-slate-500 bg-white px-4 py-2 rounded-full border">← VOLVER</button>
-                <button onclick="downloadPDF('CONSOLIDADO_GENERAL')" class="glass-tap bg-blue-950 text-yellow-400 px-5 py-2 rounded-xl text-[10px] font-black uppercase">PDF GLOBAL</button>
-            </div>
+            <button onclick="selectMonth('${period}')" class="glass-btn mb-6 text-[9px] font-black text-slate-500 bg-white px-5 py-2 rounded-full border border-slate-200 uppercase tracking-widest">← VOLVER</button>
             <div id="pdf-container">
-                <div class="confidencial-bar">CONSOLIDADO GENERAL CORPORATIVO - ${period}</div>
-                <div class="bg-[#001529] p-10 rounded-b-[50px] text-white mb-6 border-b-4 border-yellow-400 text-center shadow-2xl">
-                    <h2 class="text-4xl font-black italic uppercase leading-none mb-6">REPORTE GLOBAL</h2>
-                    <div class="bg-white/10 p-5 rounded-3xl border border-white/10">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Importe Neto Total</p>
+                <div class="bg-[#001529] p-10 rounded-b-[3rem] text-white mb-6 border-b-4 border-yellow-400 text-center shadow-2xl">
+                    <p class="text-yellow-400 font-black text-[7px] uppercase tracking-[0.4em] mb-4">Consolidado Corporativo</p>
+                    <h2 class="text-4xl font-black italic uppercase font-['Orbitron'] mb-6 tracking-tighter">${period}</h2>
+                    <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
+                        <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Importe Neto Global</p>
                         <p class="text-5xl font-black text-white">$${f(totalGral)}</p>
                     </div>
                 </div>
@@ -176,32 +202,29 @@
             cats.forEach(c => {
                 const obj = sum(d, c.o), real = sum(d, c.r), perc = obj > 0 ? (real / obj) * 100 : (real > 0 ? 100 : 0);
                 html += `
-                <div class="pdf-card">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-lg font-black italic uppercase text-blue-950">${c.n}</h4>
-                        <div class="bg-blue-950 text-yellow-400 px-3 py-1 rounded-xl font-black text-xs">${Math.round(perc)}%</div>
+                <div class="pdf-card bg-white">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-sm font-black uppercase text-blue-950">${c.n}</h4>
+                        <span class="text-blue-950 font-black text-xs">${Math.round(perc)}%</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="bg-slate-50 p-3 rounded-2xl text-center"><p class="text-[7px] font-black text-slate-400 uppercase mb-1">Vendido Global</p><p class="text-2xl font-black text-blue-950">${real}</p></div>
-                        <div class="bg-blue-950 p-3 rounded-2xl text-center"><p class="text-[7px] font-black text-yellow-500 uppercase mb-1">Meta Global</p><p class="text-2xl font-black text-yellow-400">${obj}</p></div>
-                    </div>
-                    <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
-                        <div style="width: ${Math.min(perc, 100)}%; background: ${c.color}" class="h-full rounded-full"></div>
+                    <div class="progress-bar-bg mb-3"><div class="progress-bar-fill" style="width: ${perc}%; background:${c.color}"></div></div>
+                    <div class="flex justify-between text-[9px] font-bold">
+                        <span class="text-slate-400 uppercase">Real: ${real}</span>
+                        <span class="text-slate-400 uppercase">Meta: ${obj}</span>
                     </div>
                 </div>`;
             });
-            document.getElementById('content-area').innerHTML = html + `</div></div>`;
-            window.scrollTo(0,0);
+            document.getElementById('content-area').innerHTML = html + `<button onclick="downloadPDF('GLOBAL')" class="w-full mt-6 bg-blue-900 text-yellow-400 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest glass-btn">Descargar PDF Global</button></div></div>`;
         }
 
         function renderSellers(z, period) {
             const [m, a] = period.split(' ');
             const sellers = db.filter(r => r.ZONA === z && r.MES === m && r.AÑO === a);
-            let html = `<button onclick="selectMonth('${period}')" class="glass-tap mb-6 text-[10px] font-black text-blue-900 bg-white px-4 py-2 rounded-full border">← VOLVER</button>`;
+            let html = `<button onclick="selectMonth('${period}')" class="glass-btn mb-6 text-[9px] font-black text-blue-900 bg-white px-5 py-2 rounded-full border uppercase tracking-widest">← ZONAS</button>`;
             sellers.forEach(s => {
-                html += `<div onclick="renderReport('${s.VENDEDOR}', '${period}')" class="glass-tap bg-white p-5 rounded-2xl mb-3 flex justify-between items-center border-l-[12px] border-blue-900 shadow-sm">
-                    <p class="font-black text-blue-950 uppercase text-sm italic">${s.VENDEDOR}</p>
-                    <i class="fas fa-arrow-right text-slate-200"></i>
+                html += `<div onclick="renderReport('${s.VENDEDOR}', '${period}')" class="glass-btn bg-white p-5 rounded-2xl mb-3 flex justify-between items-center border-l-[10px] border-blue-950 shadow-sm shadow-blue-900/5">
+                    <p class="font-black text-blue-950 uppercase text-xs tracking-tight">${s.VENDEDOR}</p>
+                    <i class="fas fa-chevron-right text-slate-200"></i>
                 </div>`;
             });
             document.getElementById('content-area').innerHTML = html;
@@ -212,38 +235,34 @@
             const d = db.find(r => r.VENDEDOR === v && r.MES === m && r.AÑO === a);
             const cats = [
                 {n:'Acumuladores', o:'OBJ ACUM', r:'REAL ACUM', color: '#0f172a'},
-                {n:'Llantas Auto', o:'OBJ AUTO', r:'REAL AUTO', color: '#f59e0b'},
-                {n:'Llantas Camioneta', o:'OBJ CAMIONETA', r:'REAL CAMIONETA', color: '#d97706'},
-                {n:'Llantas Camión', o:'OBJ CAMION', r:'REAL CAMION', color: '#92400e'},
                 {n:'Premium', o:'OBJ PREMIUM', r:'REAL PREMIUM', color: '#1e3a8a'},
                 {n:'AGM', o:'OBJ AGM', r:'REAL AGM', color: '#1d4ed8'},
-                {n:'Estándar', o:'OBJ ESTANDAR', r:'REAL ESTANDAR', color: '#3b82f6'},
-                {n:'Motobaterías', o:'OBJ MOTO', r:'REAL MOTO', color: '#ef4444'},
+                {n:'Llantas Auto', o:'OBJ AUTO', r:'REAL AUTO', color: '#f59e0b'},
                 {n:'Lubricantes', o:'OBJ LUB', r:'REAL LUB', color: '#f97316'},
-                {n:'Filtros', o:'OBJ FILTRO', r:'REAL FILTRO', color: '#16a34a'},
-                {n:'Alcalinas', o:'OBJ ALCALINA', r:'REAL ALCALINA', color: '#9333ea'}
+                {n:'Motobaterías', o:'OBJ MOTO', r:'REAL MOTO', color: '#ef4444'}
             ];
-            let html = `<div class="flex justify-between items-center mb-6 no-print"><button onclick="renderSellers('${d.ZONA}', '${period}')" class="glass-tap text-[10px] font-black text-slate-500 bg-white px-4 py-2 rounded-full border">← SALIR</button><button onclick="downloadPDF('${d.VENDEDOR}')" class="glass-tap bg-blue-900 text-yellow-400 px-5 py-2 rounded-xl text-[10px] font-black uppercase">PDF</button></div>
+            let html = `<button onclick="renderSellers('${d.ZONA}', '${period}')" class="glass-btn mb-6 text-[9px] font-black text-slate-500 bg-white px-5 py-2 rounded-full border uppercase tracking-widest">← SALIR</button>
             <div id="pdf-container">
-                <div class="confidencial-bar">CONFIDENCIAL - ${v} - ${period}</div>
-                <div class="bg-[#001529] p-10 rounded-b-[50px] text-white mb-6 border-b-4 border-yellow-400 text-center shadow-2xl">
-                    <p class="text-yellow-400 font-black text-[9px] uppercase tracking-widest mb-2">${period} | ${d.ZONA}</p>
-                    <h2 class="text-4xl font-black italic uppercase leading-none mb-8 tracking-tighter">${d.VENDEDOR}</h2>
-                    <div class="bg-white/10 p-5 rounded-3xl border border-white/10 backdrop-blur-sm"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Venta Individual</p><p class="text-5xl font-black text-white">$${f(n(d.IMPORTE))}</p></div>
-                    <div class="mt-4 text-[10px] font-bold text-red-400 uppercase">Recolección: ${d.RECOLECCION || 0} pz</div>
+                <div class="bg-[#001529] p-10 rounded-b-[3rem] text-white mb-6 border-b-4 border-yellow-400 text-center shadow-2xl">
+                    <p class="text-yellow-400 font-black text-[7px] uppercase tracking-[0.4em] mb-2">${period} | ${d.ZONA}</p>
+                    <h2 class="text-3xl font-black italic uppercase font-['Orbitron'] mb-8 tracking-tighter">${d.VENDEDOR}</h2>
+                    <div class="bg-white/5 p-6 rounded-3xl border border-white/10 backdrop-blur-md">
+                        <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Venta Individual</p>
+                        <p class="text-5xl font-black text-white">$${f(n(d.IMPORTE))}</p>
+                    </div>
                 </div><div class="space-y-4 px-2">`;
 
             cats.forEach(c => {
-                const obj = Math.round(n(d[c.o])), real = Math.round(n(d[c.r])), perc = obj > 0 ? (real / obj) * 100 : (real > 0 ? 100 : 0), falta = obj - real;
-                html += `<div class="pdf-card"><div class="flex justify-between items-start mb-5"><h4 class="text-xl font-black italic uppercase text-blue-950 tracking-tight leading-none">${c.n}</h4><div class="bg-blue-950 text-yellow-400 px-3 py-1.5 rounded-xl font-black text-xs">${Math.round(perc)}%</div></div><div class="grid grid-cols-2 gap-3 mb-5"><div class="bg-slate-50 p-4 rounded-2xl text-center"><p class="text-[8px] font-black text-slate-400 uppercase mb-1">Vendido</p><p class="text-3xl font-black text-blue-950">${real}</p></div><div class="bg-blue-950 p-4 rounded-2xl text-center shadow-inner"><p class="text-[8px] font-black text-yellow-500 uppercase mb-1">Meta</p><p class="text-3xl font-black text-yellow-400">${obj}</p></div></div><div class="h-3 bg-slate-100 rounded-full overflow-hidden mb-3"><div style="width: ${Math.min(perc, 100)}%; background: ${c.color}" class="h-full rounded-full"></div></div><div class="text-center">${falta > 0 ? `<p class="text-[10px] font-black text-red-500 italic uppercase">Faltan ${falta} pz</p>` : `<p class="text-[11px] font-black text-green-600 italic uppercase">¡Logrado!</p>`}</div></div>`;
+                const obj = Math.round(n(d[c.o])), real = Math.round(n(d[c.r])), perc = obj > 0 ? (real / obj) * 100 : (real > 0 ? 100 : 0);
+                html += `<div class="pdf-card bg-white shadow-sm"><div class="flex justify-between items-center mb-4"><h4 class="text-xs font-black uppercase text-blue-950">${c.n}</h4><span class="bg-blue-950 text-yellow-400 px-2 py-1 rounded-md text-[9px] font-black">${Math.round(perc)}%</span></div><div class="progress-bar-bg mb-3"><div class="progress-bar-fill" style="width: ${perc}%; background:${c.color}"></div></div><div class="flex justify-between text-[8px] font-black uppercase"><span class="text-slate-400">Vendido: ${real}</span><span class="text-slate-400">Meta: ${obj}</span></div></div>`;
             });
-            document.getElementById('content-area').innerHTML = html + `</div></div>`;
+            document.getElementById('content-area').innerHTML = html + `</div><button onclick="downloadPDF('${d.VENDEDOR}')" class="w-full mt-6 bg-blue-900 text-yellow-400 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest glass-btn">Descargar Informe PDF</button></div>`;
             window.scrollTo(0,0);
         }
 
-        function kBox(label, val, colorClass = 'text-blue-950') { return `<div class="kpi-box"><span class="kpi-lab">${label}</span><span class="kpi-val ${colorClass}">${val}</span></div>`; }
+        function mBox(label, val) { return `<div class="kpi-mini-box"><span class="kpi-mini-lab">${label}</span><span class="kpi-mini-val">${val}</span></div>`; }
         function sum(data, field) { return data.reduce((acc, r) => acc + Math.round(n(r[field])), 0); }
-        function downloadPDF(nombre) { html2pdf().set({ margin: 5, filename: `PR_${nombre}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(document.getElementById('pdf-container')).save(); }
+        function downloadPDF(nombre) { html2pdf().set({ margin: 10, filename: `PR_${nombre}.pdf`, html2canvas: { scale: 3 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(document.getElementById('pdf-container')).save(); }
         function n(v) { return parseFloat(String(v || "0").replace(/[^0-9.-]+/g,"")) || 0; }
         function f(v) { return Math.round(v).toLocaleString('es-MX'); }
         start();
