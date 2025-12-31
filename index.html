@@ -16,7 +16,6 @@
             transform: scale(0.96); 
             background: rgba(250, 204, 21, 0.2) !important;
             box-shadow: 0 0 20px rgba(250, 204, 21, 0.4) !important;
-            backdrop-filter: blur(4px);
         }
         .consolidado-premium { background: linear-gradient(135deg, #001529 0%, #002d54 100%); border: 1px solid rgba(250, 204, 21, 0.3); }
         .zona-card { background: white; border-radius: 24px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
@@ -126,7 +125,6 @@
                         ${progBox('FILTROS', sum(dZ, 'OBJ FILTRO'), sum(dZ, 'REAL FILTRO'), '#16a34a')}
                         ${progBox('ALCALINAS', sum(dZ, 'OBJ ALCALINA'), sum(dZ, 'REAL ALCALINA'), '#9333ea')}
                         ${progBox('RECOLECCIONES', 0, sum(dZ, 'RECOLECCION'), '#64748b')}
-                        
                         ${!esAjustes ? `
                         <div class="border-t border-dashed border-slate-200 my-1"></div>
                         ${progBox('LLANTAS AUTO', sum(dZ, 'OBJ AUTO'), sum(dZ, 'REAL AUTO'), '#f59e0b')}
@@ -207,9 +205,15 @@
                 {n:'Acumuladores', o:'OBJ ACUM', r:'REAL ACUM', color: '#0f172a'},
                 {n:'Premium', o:'OBJ PREMIUM', r:'REAL PREMIUM', color: '#1e3a8a'},
                 {n:'AGM', o:'OBJ AGM', r:'REAL AGM', color: '#1d4ed8'},
+                {n:'Estándar', o:'OBJ ESTANDAR', r:'REAL ESTANDAR', color: '#3b82f6'},
+                {n:'Motobaterías', o:'OBJ MOTO', r:'REAL MOTO', color: '#ef4444'},
                 {n:'Lubricantes', o:'OBJ LUB', r:'REAL LUB', color: '#f97316'},
+                {n:'Filtros', o:'OBJ FILTRO', r:'REAL FILTRO', color: '#16a34a'},
+                {n:'Alcalinas', o:'OBJ ALCALINA', r:'REAL ALCALINA', color: '#9333ea'},
+                {n:'Recolección', o:'', r:'RECOLECCION', color: '#64748b'},
                 {n:'Llantas Auto', o:'OBJ AUTO', r:'REAL AUTO', color: '#f59e0b', tire: true},
-                {n:'Llantas Camioneta', o:'OBJ CAMIONETA', r:'REAL CAMIONETA', color: '#d97706', tire: true}
+                {n:'Llantas Camioneta', o:'OBJ CAMIONETA', r:'REAL CAMIONETA', color: '#d97706', tire: true},
+                {n:'Llantas Camión', o:'OBJ CAMION', r:'REAL CAMION', color: '#92400e', tire: true}
             ];
             let html = `<button onclick="renderSellers('${d.ZONA}', '${period}')" class="glass-btn mb-6 text-[9px] font-black text-slate-500 bg-white px-5 py-2 rounded-full border uppercase tracking-widest">← VOLVER</button>
             <div id="pdf-container" class="bg-white rounded-[2rem] overflow-hidden shadow-xl">
@@ -222,7 +226,7 @@
                 const obj = n(d[c.o]), real = n(d[c.r]), perc = obj > 0 ? (real/obj)*100 : 0;
                 html += `<div class="p-4 border rounded-2xl"><p class="text-[10px] font-black text-blue-950 uppercase mb-2">${c.n}</p>
                 <div class="mini-progress-bg"><div class="mini-progress-fill" style="width:${obj > 0 ? perc : 100}%; background:${c.color}"></div></div>
-                <div class="flex justify-between text-[9px] mt-2 font-bold uppercase"><span>Real: ${real}</span><span>Meta: ${obj}</span></div></div>`;
+                <div class="flex justify-between text-[9px] mt-2 font-bold uppercase"><span>Real: ${real}</span><span>${obj > 0 ? 'Meta: ' + obj : ''}</span></div></div>`;
             });
             document.getElementById('content-area').innerHTML = html + `</div><button onclick="downloadPDF('${v}')" class="m-6 bg-blue-950 text-yellow-400 p-4 rounded-xl text-xs font-black w-[calc(100%-3rem)] glass-btn uppercase tracking-widest">Descargar PDF</button></div>`;
             window.scrollTo(0,0);
