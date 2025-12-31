@@ -17,6 +17,7 @@
             transform: scale(0.96); 
             background: rgba(250, 204, 21, 0.2) !important;
             box-shadow: 0 0 20px rgba(250, 204, 21, 0.4) !important;
+            backdrop-filter: blur(4px);
         }
 
         .consolidado-premium {
@@ -106,15 +107,15 @@
             let html = `
                 <button onclick="renderPeriods()" class="glass-btn mb-6 text-[9px] font-black text-blue-900 bg-white px-5 py-2 rounded-full border uppercase">← VOLVER</button>
                 
-                <div onclick="renderGeneralConsolidated('${period}')" class="glass-btn consolidado-premium p-6 rounded-[2.5rem] mb-8 text-white shadow-xl overflow-hidden">
-                    <div class="flex justify-between items-center mb-2">
+                <div onclick="renderGeneralConsolidated('${period}')" class="glass-btn consolidado-premium p-6 rounded-[2.5rem] mb-8 text-white shadow-xl">
+                    <div class="flex justify-between items-center mb-1">
                         <span class="text-yellow-400 text-[8px] font-black uppercase tracking-widest">Global Poza Rica</span>
-                        <i class="fas fa-chart-bar text-yellow-400/30"></i>
+                        <i class="fas fa-crown text-yellow-400/30"></i>
                     </div>
-                    <div class="truncate">
-                        <p class="text-3xl sm:text-4xl font-black font-['Orbitron'] tracking-tighter">$${f(totalGral)}</p>
+                    <div style="width: 100%; overflow: hidden;">
+                        <p class="font-black font-['Orbitron'] tracking-tighter" style="font-size: clamp(1.5rem, 8vw, 2.5rem); line-height: 1;">$${f(totalGral)}</p>
                     </div>
-                    <p class="text-[8px] font-bold text-white/40 uppercase mt-1">Venta Neta del Periodo</p>
+                    <p class="text-[8px] font-bold text-white/40 uppercase mt-2 tracking-widest">Ver Consolidado General →</p>
                 </div>
             `;
 
@@ -136,11 +137,7 @@
                         ${progBox('ACUMULADORES TOTALES', sum(dZ, 'OBJ ACUM'), sum(dZ, 'REAL ACUM'), '#0f172a')}
                         ${progBox('PREMIUM', sum(dZ, 'OBJ PREMIUM'), sum(dZ, 'REAL PREMIUM'), '#1e3a8a')}
                         ${progBox('AGM', sum(dZ, 'OBJ AGM'), sum(dZ, 'REAL AGM'), '#1d4ed8')}
-                        ${progBox('ESTANDAR', sum(dZ, 'OBJ ESTANDAR'), sum(dZ, 'REAL ESTANDAR'), '#3b82f6')}
-                        ${progBox('LUBRICANTES', sum(dZ, 'OBJ LUB'), sum(dZ, 'REAL LUB'), '#f97316')}
-                        ${progBox('MOTOBATERIAS', sum(dZ, 'OBJ MOTO'), sum(dZ, 'REAL MOTO'), '#ef4444')}
-                        ${progBox('FILTROS', sum(dZ, 'OBJ FILTRO'), sum(dZ, 'REAL FILTRO'), '#16a34a')}
-                        ${progBox('RECOLECCIONES', 0, sum(dZ, 'RECOLECCION'), '#64748b')}
+                        ${progBox('RECOLECCIONES', 0, sum(dZ, 'RECOLECCION'), '#ef4444')}
                     </div>
                 </div>`;
             });
@@ -173,33 +170,52 @@
             const [m, a] = period.split(' ');
             const d = db.filter(r => r.MES === m && r.AÑO === a);
             const totalGral = d.reduce((acc, r) => acc + n(r.IMPORTE), 0);
+            
             const cats = [
                 {n:'Acumuladores Totales', o:'OBJ ACUM', r:'REAL ACUM', color: '#0f172a'},
+                {n:'Llantas Auto', o:'OBJ AUTO', r:'REAL AUTO', color: '#f59e0b'},
+                {n:'Llantas Camioneta', o:'OBJ CAMIONETA', r:'REAL CAMIONETA', color: '#d97706'},
+                {n:'Llantas Camión', o:'OBJ CAMION', r:'REAL CAMION', color: '#92400e'},
                 {n:'Premium', o:'OBJ PREMIUM', r:'REAL PREMIUM', color: '#1e3a8a'},
-                {n:'AGM', o:'OBJ AGM', r:'REAL AGM', color: '#1d4ed8'}
+                {n:'AGM', o:'OBJ AGM', r:'REAL AGM', color: '#1d4ed8'},
+                {n:'Estándar', o:'OBJ ESTANDAR', r:'REAL ESTANDAR', color: '#3b82f6'},
+                {n:'Motobaterías', o:'OBJ MOTO', r:'REAL MOTO', color: '#ef4444'},
+                {n:'Lubricantes', o:'OBJ LUB', r:'REAL LUB', color: '#f97316'},
+                {n:'Filtros', o:'OBJ FILTRO', r:'REAL FILTRO', color: '#16a34a'},
+                {n:'Alcalinas', o:'OBJ ALCALINA', r:'REAL ALCALINA', color: '#9333ea'}
             ];
-            let html = `<button onclick="selectMonth('${period}')" class="glass-btn mb-6 text-[9px] font-black text-blue-900 bg-white px-5 py-2 rounded-full border">← VOLVER</button>
+
+            let html = `<button onclick="selectMonth('${period}')" class="glass-btn mb-6 text-[9px] font-black text-blue-900 bg-white px-5 py-2 rounded-full border uppercase tracking-widest">← VOLVER</button>
             <div id="pdf-container" class="bg-white rounded-3xl overflow-hidden shadow-xl">
-                <div class="bg-[#001529] p-8 text-white text-center">
-                    <h2 class="text-2xl font-black italic uppercase font-['Orbitron'] mb-2">CONSOLIDADO GLOBAL</h2>
-                    <p class="text-5xl font-black text-yellow-400 tracking-tighter">$${f(totalGral)}</p>
+                <div class="bg-[#001529] p-10 text-white text-center border-b-4 border-yellow-400">
+                    <p class="text-[8px] font-bold text-yellow-400 uppercase tracking-[0.3em] mb-4">Reporte General PR</p>
+                    <h2 class="text-3xl font-black italic uppercase font-['Orbitron'] mb-6">${period}</h2>
+                    <p class="text-5xl font-black tracking-tighter">$${f(totalGral)}</p>
                 </div>
-                <div class="p-6 space-y-6">`;
+                <div class="p-6 space-y-5">`;
+
             cats.forEach(c => {
-                const obj = sum(d, c.o), real = sum(d, c.r), perc = obj > 0 ? Math.min((real/obj)*100, 100) : 100;
-                html += `<div><div class="flex justify-between font-black text-[10px] mb-1"><span>${c.n}</span><span>${Math.round(perc)}%</span></div>
-                <div class="mini-progress-bg"><div class="mini-progress-fill" style="width:${perc}%; background:${c.color}"></div></div></div>`;
+                const obj = sum(d, c.o), real = sum(d, c.r), perc = obj > 0 ? Math.min((real/obj)*100, 100) : 0;
+                html += `
+                <div>
+                    <div class="flex justify-between font-black text-[10px] mb-1 uppercase">
+                        <span class="text-blue-950">${c.n}</span>
+                        <span class="text-blue-900">${real} PZ (${Math.round(perc)}%)</span>
+                    </div>
+                    <div class="mini-progress-bg"><div class="mini-progress-fill" style="width:${perc}%; background:${c.color}"></div></div>
+                    ${obj > 0 ? `<div class="flex justify-between text-[7px] mt-1 font-bold text-slate-400 uppercase"><span>Meta: ${obj}</span><span>Falta: ${Math.max(0, obj-real)}</span></div>` : ''}
+                </div>`;
             });
-            document.getElementById('content-area').innerHTML = html + `</div><button onclick="downloadPDF('GLOBAL')" class="m-6 bg-blue-900 text-white p-4 rounded-xl text-xs font-black w-[calc(100%-3rem)] glass-btn">DESCARGAR REPORTE</button></div>`;
+            document.getElementById('content-area').innerHTML = html + `</div><button onclick="downloadPDF('GLOBAL')" class="m-6 bg-blue-900 text-white p-4 rounded-xl text-xs font-black w-[calc(100%-3rem)] glass-btn uppercase tracking-widest">Descargar PDF Global</button></div>`;
         }
 
         function renderSellers(z, period) {
             const [m, a] = period.split(' ');
             const sellers = db.filter(r => r.ZONA === z && r.MES === m && r.AÑO === a);
-            let html = `<button onclick="selectMonth('${period}')" class="glass-btn mb-6 text-[9px] font-black text-blue-900 bg-white px-5 py-2 rounded-full border">← ZONAS</button>`;
+            let html = `<button onclick="selectMonth('${period}')" class="glass-btn mb-6 text-[9px] font-black text-blue-900 bg-white px-5 py-2 rounded-full border uppercase">← ZONAS</button>`;
             sellers.forEach(s => {
                 html += `<div onclick="renderReport('${s.VENDEDOR}', '${period}')" class="glass-btn bg-white p-5 rounded-2xl mb-3 flex justify-between items-center border-l-[10px] border-blue-950 shadow-sm">
-                    <p class="font-black text-blue-950 uppercase text-xs">${s.VENDEDOR}</p>
+                    <p class="font-black text-blue-950 uppercase text-xs italic">${s.VENDEDOR}</p>
                     <i class="fas fa-chevron-right text-slate-200"></i>
                 </div>`;
             });
@@ -211,23 +227,25 @@
             const d = db.find(r => r.VENDEDOR === v && r.MES === m && r.AÑO === a);
             const cats = [
                 {n:'Acumuladores', o:'OBJ ACUM', r:'REAL ACUM', color: '#0f172a'},
+                {n:'Llantas Auto', o:'OBJ AUTO', r:'REAL AUTO', color: '#f59e0b'},
                 {n:'Premium', o:'OBJ PREMIUM', r:'REAL PREMIUM', color: '#1e3a8a'},
                 {n:'AGM', o:'OBJ AGM', r:'REAL AGM', color: '#1d4ed8'}
             ];
-            let html = `<button onclick="renderSellers('${d.ZONA}', '${period}')" class="glass-btn mb-6 text-[9px] font-black text-slate-500 bg-white px-5 py-2 rounded-full border">← SALIR</button>
-            <div id="pdf-container" class="bg-white rounded-[2rem] overflow-hidden">
+            let html = `<button onclick="renderSellers('${d.ZONA}', '${period}')" class="glass-btn mb-6 text-[9px] font-black text-slate-500 bg-white px-5 py-2 rounded-full border uppercase tracking-widest">← SALIR</button>
+            <div id="pdf-container" class="bg-white rounded-[2rem] overflow-hidden shadow-xl">
                 <div class="bg-[#001529] p-8 text-white text-center border-b-4 border-yellow-400">
-                    <p class="text-[8px] font-bold text-yellow-400 uppercase mb-2">${period}</p>
+                    <p class="text-[8px] font-bold text-yellow-400 uppercase mb-2">${period} | ${d.ZONA}</p>
                     <h2 class="text-3xl font-black italic font-['Orbitron']">${v}</h2>
                     <p class="text-4xl font-black mt-4">$${f(n(d.IMPORTE))}</p>
                 </div><div class="p-6 space-y-4">`;
             cats.forEach(c => {
-                const obj = n(d[c.o]), real = n(d[c.r]), perc = obj > 0 ? (real/obj)*100 : 100;
+                const obj = n(d[c.o]), real = n(d[c.r]), perc = obj > 0 ? (real/obj)*100 : 0;
                 html += `<div class="p-4 border rounded-2xl"><p class="text-[10px] font-black text-blue-950 uppercase mb-2">${c.n}</p>
                 <div class="mini-progress-bg"><div class="mini-progress-fill" style="width:${perc}%; background:${c.color}"></div></div>
-                <div class="flex justify-between text-[9px] mt-2 font-bold"><span>Real: ${real}</span><span>Meta: ${obj}</span></div></div>`;
+                <div class="flex justify-between text-[9px] mt-2 font-bold uppercase"><span>Real: ${real}</span><span>Meta: ${obj}</span></div></div>`;
             });
-            document.getElementById('content-area').innerHTML = html + `</div><button onclick="downloadPDF('${v}')" class="m-6 bg-blue-950 text-yellow-400 p-4 rounded-xl text-xs font-black w-[calc(100%-3rem)] glass-btn">DESCARGAR PDF</button></div>`;
+            document.getElementById('content-area').innerHTML = html + `</div><button onclick="downloadPDF('${v}')" class="m-6 bg-blue-950 text-yellow-400 p-4 rounded-xl text-xs font-black w-[calc(100%-3rem)] glass-btn uppercase tracking-widest">Descargar PDF</button></div>`;
+            window.scrollTo(0,0);
         }
 
         function sum(data, field) { return data.reduce((acc, r) => acc + Math.round(n(r[field])), 0); }
