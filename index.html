@@ -17,7 +17,7 @@
         .glass-btn:active { transform: scale(0.96); }
         .consolidado-premium { background: linear-gradient(135deg, #001529 0%, #002d54 100%); border: 1px solid rgba(250, 204, 21, 0.3); }
         .pdf-card { border-radius: 20px; background: white; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .number-big { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.8rem; } /* Más grande */
+        .number-big { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.8rem; }
         .zona-badge { background: #001529; color: #facc15; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 900; font-size: 12px; }
         
         .color-zona-0 { border-left-color: #2563eb !important; }
@@ -56,6 +56,7 @@
         let db = [];
         const mesesRef = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 
+        // CONFIGURACIÓN DE LÍNEAS - Se actualizó Recolección con sus nuevas columnas de meta
         const cats = [
             {n:'Acumuladores Totales', o:'OBJ ACUM', r:'REAL ACUM', color: '#0f172a'},
             {n:'Premium', o:'OBJ PREMIUM', r:'REAL PREMIUM', color: '#1e3a8a'},
@@ -65,7 +66,7 @@
             {n:'Lubricantes', o:'OBJ LUB', r:'REAL LUB', color: '#f97316'},
             {n:'Filtros', o:'OBJ FILTRO', r:'REAL FILTRO', color: '#16a34a'},
             {n:'Alcalinas', o:'OBJ ALCALINA', r:'REAL ALCALINA', color: '#9333ea'},
-            {n:'Recolección', o:'', r:'RECOLECCION', color: '#64748b'},
+            {n:'Recolección', o:'OBJ RECOLECCION', r:'REAL RECOLECCION', color: '#64748b'},
             {n:'Llantas Auto', o:'OBJ AUTO', r:'REAL AUTO', color: '#f59e0b'},
             {n:'Llantas Camioneta', o:'OBJ CAMIONETA', r:'REAL CAMIONETA', color: '#d97706'},
             {n:'Llantas Camión', o:'OBJ CAMION', r:'REAL CAMION', color: '#92400e'}
@@ -76,7 +77,7 @@
                 const response = await fetch(CSV_URL + '&t=' + Date.now());
                 const text = await response.text();
                 Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { 
-                    db = res.data.filter(r => r.MES && (n(r.IMPORTE) > 0 || n(r['REAL ACUM']) > 0)); 
+                    db = res.data.filter(r => r.MES && (n(r.IMPORTE) > 0 || n(r['REAL ACUM']) > 0 || n(r['REAL RECOLECCION']) > 0)); 
                     document.getElementById('update-tag').innerText = `LIVE: ${new Date().toLocaleTimeString()}`;
                     document.getElementById('loader').classList.add('hidden'); 
                 }});
