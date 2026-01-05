@@ -17,7 +17,6 @@
         .glass-btn:active { transform: scale(0.96); }
         .consolidado-premium { background: linear-gradient(135deg, #001529 0%, #002d54 100%); border: 1px solid rgba(250, 204, 21, 0.3); }
         .pdf-card { border-radius: 20px; background: white; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .number-big { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.8rem; }
         .zona-badge { background: #001529; color: #facc15; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 900; font-size: 12px; }
         
         .color-zona-0 { border-left-color: #2563eb !important; }
@@ -52,11 +51,12 @@
     <main class="max-w-xl mx-auto p-4 pb-24"><div id="content-area"></div></main>
 
     <script>
+        // SI CAMBIÓ EL NOMBRE DE LA PESTAÑA, DEBES ACTUALIZAR EL GID AQUÍ ABAJO:
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUv_5jyAb0_Hdvs5nBLsDbr-9FME__6Y7HS1Fz7QAU8Kdm1v13rQfLWbDgoLxjRiiX82F4K2hFsv6O/pub?gid=97082076&single=true&output=csv';
+        
         let db = [];
         const mesesRef = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 
-        // CONFIGURACIÓN DE LÍNEAS - Se actualizó Recolección con sus nuevas columnas de meta
         const cats = [
             {n:'Acumuladores Totales', o:'OBJ ACUM', r:'REAL ACUM', color: '#0f172a'},
             {n:'Premium', o:'OBJ PREMIUM', r:'REAL PREMIUM', color: '#1e3a8a'},
@@ -76,25 +76,45 @@
             try {
                 const response = await fetch(CSV_URL + '&t=' + Date.now());
                 const text = await response.text();
-                Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { 
-                    db = res.data.filter(r => r.MES && (n(r.IMPORTE) > 0 || n(r['REAL ACUM']) > 0 || n(r['REAL RECOLECCION']) > 0)); 
-                    document.getElementById('update-tag').innerText = `LIVE: ${new Date().toLocaleTimeString()}`;
-                    document.getElementById('loader').classList.add('hidden'); 
-                }});
-            } catch (e) { alert("Error de Sincronización"); }
+                
+                Papa.parse(text, { 
+                    header: true, 
+                    skipEmptyLines: true,
+                    // BLINDAJE 1: Limpia espacios y convierte a mayúsculas los nombres de las columnas
+                    transformHeader: (h) => h.trim().toUpperCase(), 
+                    complete: (res) => { 
+                        // BLINDAJE 2: Filtro ultra-flexible. Si tiene Mes o Año, entra.
+                        db = res.data.filter(r => (r.MES || r.AÑO) && r.VENDEDOR); 
+                        
+                        if(db.length === 0) {
+                            console.error("Columnas detectadas:", Object.keys(res.data[0] || {}));
+                            alert("AVISO: No se encontraron datos. Por favor, verifica que el GID en el código sea el de la pestaña actual.");
+                        }
+
+                        document.getElementById('update-tag').innerText = `LIVE: ${new Date().toLocaleTimeString()}`;
+                        document.getElementById('loader').classList.add('hidden'); 
+                    }
+                });
+            } catch (e) { alert("Error de Conexión. El enlace de Google Sheets podría estar roto."); }
         }
 
         function enterApp() { 
+            if(db.length === 0) {
+                alert("La base de datos está vacía. No se puede ingresar.");
+                return;
+            }
             document.getElementById('view-cover').classList.add('hidden'); 
             document.getElementById('main-header').classList.remove('hidden'); 
             renderPeriods(); 
         }
 
         function renderPeriods() {
-            const periodos = [...new Set(db.map(r => `${r.MES} ${r.AÑO}`))].sort((a,b) => {
+            // BLINDAJE 3: Asegurar que MES y AÑO existan antes de mapear
+            const periodos = [...new Set(db.map(r => `${(r.MES || 'SIN MES').toUpperCase()} ${(r.AÑO || '')}`))].sort((a,b) => {
                 const [mA, aA] = a.split(' '), [mB, aB] = b.split(' ');
                 return aA !== aB ? aB - aA : mesesRef.indexOf(mB) - mesesRef.indexOf(mA);
             });
+
             let html = `<p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Seleccione Periodo</p>`;
             periodos.forEach((p, i) => {
                 const isAct = (i === 0);
@@ -106,15 +126,20 @@
             document.getElementById('content-area').innerHTML = html;
         }
 
-        function selectMonth(p) { const [m, a] = p.split(' '); renderZones(db.filter(r => r.MES === m && r.AÑO === a), p); }
+        function selectMonth(p) { 
+            const parts = p.split(' ');
+            const m = parts[0];
+            const a = parts[1];
+            renderZones(db.filter(r => r.MES?.toUpperCase() === m && r.AÑO == a), p); 
+        }
 
         function toggleDropdown(id) { 
             const el = document.getElementById(id);
-            el.classList.toggle('dropdown-active');
+            if(el) el.classList.toggle('dropdown-active');
         }
 
         function renderZones(data, period) {
-            const zones = [...new Set(data.map(r => r.ZONA))];
+            const zones = [...new Set(data.map(r => r.ZONA || 'GENERAL'))];
             const totalGral = data.reduce((acc, r) => acc + n(r.IMPORTE), 0);
 
             let html = `
@@ -135,7 +160,7 @@
             `;
 
             zones.forEach((z, i) => {
-                const dZ = data.filter(r => r.ZONA === z);
+                const dZ = data.filter(r => (r.ZONA || 'GENERAL') === z);
                 const realZ = dZ.reduce((acc, r) => acc + n(r.IMPORTE), 0);
                 html += `
                 <div id="zona-card-${i}" class="bg-white p-6 rounded-[2rem] mb-5 shadow-lg border border-slate-100 border-l-[12px] color-zona-${i % 4}">
@@ -197,14 +222,18 @@
         }
 
         function renderGeneralConsolidated(period) {
-            const [m, a] = period.split(' ');
-            const d = db.filter(r => r.MES === m && r.AÑO === a);
+            const parts = period.split(' ');
+            const m = parts[0];
+            const a = parts[1];
+            const d = db.filter(r => r.MES?.toUpperCase() === m && r.AÑO == a);
             renderDetailedReport("POZA RICA GLOBAL", period, d, d.reduce((acc, r) => acc + n(r.IMPORTE), 0), true);
         }
 
         function renderSellers(z, period) {
-            const [m, a] = period.split(' ');
-            const sellers = db.filter(r => r.ZONA === z && r.MES === m && r.AÑO === a);
+            const parts = period.split(' ');
+            const m = parts[0];
+            const a = parts[1];
+            const sellers = db.filter(r => (r.ZONA || 'GENERAL') === z && r.MES?.toUpperCase() === m && r.AÑO == a);
             let html = `<button onclick="selectMonth('${period}')" class="glass-btn mb-6 text-[10px] font-black text-blue-900 bg-white px-6 py-2 rounded-full border shadow-sm uppercase">← VOLVER A ZONAS</button>`;
             sellers.forEach(s => {
                 html += `<div onclick="renderReport('${s.VENDEDOR}', '${period}')" class="glass-btn bg-white p-5 rounded-2xl mb-3 flex justify-between items-center border-l-8 border-blue-950 shadow-md">
@@ -216,9 +245,11 @@
         }
 
         function renderReport(v, period) {
-            const [m, a] = period.split(' ');
-            const d = db.find(r => r.VENDEDOR === v && r.MES === m && r.AÑO === a);
-            renderDetailedReport(v, period, [d], n(d.IMPORTE), false, d.ZONA);
+            const parts = period.split(' ');
+            const m = parts[0];
+            const a = parts[1];
+            const d = db.find(r => r.VENDEDOR === v && r.MES?.toUpperCase() === m && r.AÑO == a);
+            renderDetailedReport(v, period, [d], n(d.IMPORTE), false, d.ZONA || 'GENERAL');
         }
 
         function renderDetailedReport(titulo, period, dataArr, totalImporte, isGlobal, zonaNombre = "") {
@@ -252,6 +283,7 @@
         }
         function n(v) { return parseFloat(String(v || "0").replace(/[^0-9.-]+/g,"")) || 0; }
         function f(v) { return Math.round(v).toLocaleString('es-MX'); }
+        
         start();
     </script>
 </body>
