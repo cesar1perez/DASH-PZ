@@ -51,7 +51,6 @@
     <main class="max-w-xl mx-auto p-4 pb-24"><div id="content-area"></div></main>
 
     <script>
-        // SI CAMBIÓ EL NOMBRE DE LA PESTAÑA, DEBES ACTUALIZAR EL GID AQUÍ ABAJO:
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUv_5jyAb0_Hdvs5nBLsDbr-9FME__6Y7HS1Fz7QAU8Kdm1v13rQfLWbDgoLxjRiiX82F4K2hFsv6O/pub?gid=97082076&single=true&output=csv';
         
         let db = [];
@@ -76,46 +75,43 @@
             try {
                 const response = await fetch(CSV_URL + '&t=' + Date.now());
                 const text = await response.text();
-                
                 Papa.parse(text, { 
                     header: true, 
                     skipEmptyLines: true,
-                    // BLINDAJE 1: Limpia espacios y convierte a mayúsculas los nombres de las columnas
                     transformHeader: (h) => h.trim().toUpperCase(), 
                     complete: (res) => { 
-                        // BLINDAJE 2: Filtro ultra-flexible. Si tiene Mes o Año, entra.
-                        db = res.data.filter(r => (r.MES || r.AÑO) && r.VENDEDOR); 
+                        // REGLA: Solo cargar filas que tengan Mes, Año y un Importe real registrado (> 0)
+                        db = res.data.filter(r => r.MES && r.AÑO && n(r.IMPORTE) > 0); 
                         
-                        if(db.length === 0) {
-                            console.error("Columnas detectadas:", Object.keys(res.data[0] || {}));
-                            alert("AVISO: No se encontraron datos. Por favor, verifica que el GID en el código sea el de la pestaña actual.");
-                        }
-
                         document.getElementById('update-tag').innerText = `LIVE: ${new Date().toLocaleTimeString()}`;
                         document.getElementById('loader').classList.add('hidden'); 
                     }
                 });
-            } catch (e) { alert("Error de Conexión. El enlace de Google Sheets podría estar roto."); }
+            } catch (e) { alert("Error de Sincronización."); }
         }
 
         function enterApp() { 
-            if(db.length === 0) {
-                alert("La base de datos está vacía. No se puede ingresar.");
-                return;
-            }
             document.getElementById('view-cover').classList.add('hidden'); 
             document.getElementById('main-header').classList.remove('hidden'); 
             renderPeriods(); 
         }
 
         function renderPeriods() {
-            // BLINDAJE 3: Asegurar que MES y AÑO existan antes de mapear
-            const periodos = [...new Set(db.map(r => `${(r.MES || 'SIN MES').toUpperCase()} ${(r.AÑO || '')}`))].sort((a,b) => {
+            // Solo aparecerán los meses que tienen ventas en la base de datos
+            const periodos = [...new Set(db.map(r => `${r.MES.toUpperCase()} ${r.AÑO}`))].sort((a,b) => {
                 const [mA, aA] = a.split(' '), [mB, aB] = b.split(' ');
                 return aA !== aB ? aB - aA : mesesRef.indexOf(mB) - mesesRef.indexOf(mA);
             });
 
             let html = `<p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Seleccione Periodo</p>`;
+            
+            if(periodos.length === 0) {
+                html += `<div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 text-center">
+                            <p class="text-sm font-bold text-blue-900">Esperando datos de venta...</p>
+                            <p class="text-[10px] text-blue-400 uppercase mt-2">No hay información registrada con importe mayor a $0</p>
+                         </div>`;
+            }
+
             periodos.forEach((p, i) => {
                 const isAct = (i === 0);
                 html += `<div onclick="selectMonth('${p}')" class="glass-btn p-6 rounded-3xl mb-4 flex justify-between items-center shadow-sm border ${isAct ? 'bg-yellow-400 border-blue-900' : 'bg-white border-slate-200'}">
@@ -127,10 +123,8 @@
         }
 
         function selectMonth(p) { 
-            const parts = p.split(' ');
-            const m = parts[0];
-            const a = parts[1];
-            renderZones(db.filter(r => r.MES?.toUpperCase() === m && r.AÑO == a), p); 
+            const [m, a] = p.split(' '); 
+            renderZones(db.filter(r => r.MES.toUpperCase() === m && r.AÑO == a), p); 
         }
 
         function toggleDropdown(id) { 
@@ -139,7 +133,7 @@
         }
 
         function renderZones(data, period) {
-            const zones = [...new Set(data.map(r => r.ZONA || 'GENERAL'))];
+            const zones = [...new Set(data.map(r => r.ZONA || 'SIN ZONA'))];
             const totalGral = data.reduce((acc, r) => acc + n(r.IMPORTE), 0);
 
             let html = `
@@ -160,7 +154,7 @@
             `;
 
             zones.forEach((z, i) => {
-                const dZ = data.filter(r => (r.ZONA || 'GENERAL') === z);
+                const dZ = data.filter(r => (r.ZONA || 'SIN ZONA') === z);
                 const realZ = dZ.reduce((acc, r) => acc + n(r.IMPORTE), 0);
                 html += `
                 <div id="zona-card-${i}" class="bg-white p-6 rounded-[2rem] mb-5 shadow-lg border border-slate-100 border-l-[12px] color-zona-${i % 4}">
@@ -222,18 +216,14 @@
         }
 
         function renderGeneralConsolidated(period) {
-            const parts = period.split(' ');
-            const m = parts[0];
-            const a = parts[1];
-            const d = db.filter(r => r.MES?.toUpperCase() === m && r.AÑO == a);
+            const [m, a] = period.split(' ');
+            const d = db.filter(r => r.MES.toUpperCase() === m && r.AÑO == a);
             renderDetailedReport("POZA RICA GLOBAL", period, d, d.reduce((acc, r) => acc + n(r.IMPORTE), 0), true);
         }
 
         function renderSellers(z, period) {
-            const parts = period.split(' ');
-            const m = parts[0];
-            const a = parts[1];
-            const sellers = db.filter(r => (r.ZONA || 'GENERAL') === z && r.MES?.toUpperCase() === m && r.AÑO == a);
+            const [m, a] = period.split(' ');
+            const sellers = db.filter(r => (r.ZONA || 'SIN ZONA') === z && r.MES.toUpperCase() === m && r.AÑO == a);
             let html = `<button onclick="selectMonth('${period}')" class="glass-btn mb-6 text-[10px] font-black text-blue-900 bg-white px-6 py-2 rounded-full border shadow-sm uppercase">← VOLVER A ZONAS</button>`;
             sellers.forEach(s => {
                 html += `<div onclick="renderReport('${s.VENDEDOR}', '${period}')" class="glass-btn bg-white p-5 rounded-2xl mb-3 flex justify-between items-center border-l-8 border-blue-950 shadow-md">
@@ -245,11 +235,9 @@
         }
 
         function renderReport(v, period) {
-            const parts = period.split(' ');
-            const m = parts[0];
-            const a = parts[1];
-            const d = db.find(r => r.VENDEDOR === v && r.MES?.toUpperCase() === m && r.AÑO == a);
-            renderDetailedReport(v, period, [d], n(d.IMPORTE), false, d.ZONA || 'GENERAL');
+            const [m, a] = period.split(' ');
+            const d = db.find(r => r.VENDEDOR === v && r.MES.toUpperCase() === m && r.AÑO == a);
+            renderDetailedReport(v, period, [d], n(d.IMPORTE), false, d.ZONA || 'SIN ZONA');
         }
 
         function renderDetailedReport(titulo, period, dataArr, totalImporte, isGlobal, zonaNombre = "") {
