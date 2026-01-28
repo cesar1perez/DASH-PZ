@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POZA RICA ANALYTICS ELITE</title>
+    <title>Dashboard Poza Rica</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -18,12 +18,10 @@
         .consolidado-premium { background: linear-gradient(135deg, #001529 0%, #002d54 100%); border: 1px solid rgba(250, 204, 21, 0.3); }
         .pdf-card { border-radius: 20px; background: white; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .zona-badge { background: #001529; color: #facc15; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 900; font-size: 12px; }
-        
         .color-zona-0 { border-left-color: #2563eb !important; }
         .color-zona-1 { border-left-color: #16a34a !important; }
         .color-zona-2 { border-left-color: #ea580c !important; }
         .color-zona-3 { border-left-color: #9333ea !important; }
-
         .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out; }
         .dropdown-active .dropdown-content { max-height: 8000px; padding-top: 20px; overflow: visible; }
     </style>
@@ -37,24 +35,43 @@
 
     <header id="main-header" class="hidden bg-[#001529] text-white sticky top-0 z-40 border-b-2 border-yellow-400 shadow-xl">
         <div class="max-w-xl mx-auto p-4 flex justify-between items-center">
-            <h2 class="font-black italic uppercase text-sm tracking-tighter yellow-glow font-orbitron">PR ANALYTICS</h2>
-            <p id="update-tag" class="text-[8px] text-yellow-500 font-bold uppercase"></p>
+            <h2 class="font-black italic uppercase text-sm tracking-tighter yellow-glow font-orbitron">DASHBOARD POZA RICA</h2>
+            <button onclick="logout()" class="text-[8px] bg-red-600 px-3 py-1 rounded-lg font-bold uppercase tracking-widest">Salir</button>
         </div>
     </header>
 
     <div id="view-cover" class="fixed inset-0 bg-[#001529] z-50 flex flex-col items-center justify-center text-center p-6 text-white">
-        <h1 class="text-6xl font-black italic mb-2 yellow-glow font-orbitron leading-tight">POZA RICA</h1>
+        <h1 class="text-5xl font-black italic mb-2 yellow-glow font-orbitron leading-tight uppercase">Dashboard Poza Rica</h1>
         <p class="text-yellow-400 text-[9px] tracking-[0.4em] mb-12 uppercase font-bold">Unidad de Inteligencia Comercial</p>
-        <button onclick="enterApp()" class="glass-btn bg-yellow-400 text-blue-950 font-black px-12 py-5 rounded-2xl text-xs tracking-widest uppercase shadow-2xl">Ingresar al Sistema</button>
+        
+        <div class="flex flex-col gap-4 w-full max-w-xs">
+            <button onclick="checkAccess()" class="glass-btn bg-yellow-400 text-blue-950 font-black px-6 py-5 rounded-2xl text-[10px] tracking-widest uppercase shadow-2xl">
+                Acceso Directivo / Gerencia
+            </button>
+            <button onclick="showVendedoresList()" class="glass-btn border-2 border-yellow-400 text-yellow-400 font-black px-6 py-5 rounded-2xl text-[10px] tracking-widest uppercase shadow-2xl">
+                Acceso Vendedores
+            </button>
+        </div>
     </div>
 
-    <main class="max-w-xl mx-auto p-4 pb-24"><div id="content-area"></div></main>
+    <main id="main-content" class="max-w-xl mx-auto p-4 pb-24 hidden"><div id="content-area"></div></main>
 
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUv_5jyAb0_Hdvs5nBLsDbr-9FME__6Y7HS1Fz7QAU8Kdm1v13rQfLWbDgoLxjRiiX82F4K2hFsv6O/pub?gid=97082076&single=true&output=csv';
         
         let db = [];
+        let userRole = ''; 
+        let currentUser = '';
         const mesesRef = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+
+        const vList = [
+            "JOSUE JIMAREZ ROCHA",
+            "VENTAS EMPRESARIAL YURIDIA A.",
+            "CUENTAS ESPECIALES",
+            "ISRAEL ABISAID CRUZ GOMEZ",
+            "DANIEL LIRA AZUARA",
+            "ROMAN RAMSES CASTILLO"
+        ];
 
         const cats = [
             {n:'Acumuladores Totales', o:'OBJ ACUM', r:'REAL ACUM', color: '#0f172a'},
@@ -80,41 +97,73 @@
                     skipEmptyLines: true,
                     transformHeader: (h) => h.trim().toUpperCase(), 
                     complete: (res) => { 
-                        // REGLA: Solo cargar filas que tengan Mes, Año y un Importe real registrado (> 0)
                         db = res.data.filter(r => r.MES && r.AÑO && n(r.IMPORTE) > 0); 
-                        
-                        document.getElementById('update-tag').innerText = `LIVE: ${new Date().toLocaleTimeString()}`;
                         document.getElementById('loader').classList.add('hidden'); 
                     }
                 });
             } catch (e) { alert("Error de Sincronización."); }
         }
 
+        function checkAccess() {
+            const pass = prompt("Ingrese Contraseña de Gerencia:");
+            if(pass === "Llanterama2426") {
+                userRole = 'DIRECTIVO';
+                enterApp();
+            } else if(pass !== null) { alert("Acceso Denegado"); }
+        }
+
+        function showVendedoresList() {
+            let html = `
+                <div id="v-selection-screen" class="fixed inset-0 bg-[#001529] z-[60] p-6 overflow-y-auto">
+                    <button onclick="logout()" class="mb-8 text-white text-[10px] font-black uppercase tracking-widest">← VOLVER AL INICIO</button>
+                    <h2 class="text-yellow-400 font-orbitron text-xl mb-6 yellow-glow">LISTA DE VENDEDORES</h2>
+                    <div class="space-y-3">
+                        ${vList.map(v => `
+                            <div onclick="accessVendedor('${v}')" class="bg-white/5 border border-white/10 p-5 rounded-2xl text-white font-bold text-xs uppercase tracking-tight glass-btn">
+                                ${v}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        function accessVendedor(v) {
+            userRole = 'VENDEDOR';
+            currentUser = v;
+            const screen = document.getElementById('v-selection-screen');
+            if(screen) screen.remove();
+            enterApp();
+        }
+
         function enterApp() { 
             document.getElementById('view-cover').classList.add('hidden'); 
             document.getElementById('main-header').classList.remove('hidden'); 
+            document.getElementById('main-content').classList.remove('hidden'); 
             renderPeriods(); 
         }
 
+        function logout() {
+            userRole = '';
+            currentUser = '';
+            const screen = document.getElementById('v-selection-screen');
+            if(screen) screen.remove();
+            document.getElementById('view-cover').classList.remove('hidden'); 
+            document.getElementById('main-header').classList.add('hidden'); 
+            document.getElementById('main-content').classList.add('hidden'); 
+        }
+
         function renderPeriods() {
-            // Solo aparecerán los meses que tienen ventas en la base de datos
-            const periodos = [...new Set(db.map(r => `${r.MES.toUpperCase()} ${r.AÑO}`))].sort((a,b) => {
+            let filteredDb = userRole === 'DIRECTIVO' ? db : db.filter(r => r.VENDEDOR === currentUser);
+            const periodos = [...new Set(filteredDb.map(r => `${r.MES.toUpperCase()} ${r.AÑO}`))].sort((a,b) => {
                 const [mA, aA] = a.split(' '), [mB, aB] = b.split(' ');
                 return aA !== aB ? aB - aA : mesesRef.indexOf(mB) - mesesRef.indexOf(mA);
             });
 
-            let html = `<p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Seleccione Periodo</p>`;
-            
-            if(periodos.length === 0) {
-                html += `<div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 text-center">
-                            <p class="text-sm font-bold text-blue-900">Esperando datos de venta...</p>
-                            <p class="text-[10px] text-blue-400 uppercase mt-2">No hay información registrada con importe mayor a $0</p>
-                         </div>`;
-            }
-
+            let html = `<p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Periodos Disponibles</p>`;
             periodos.forEach((p, i) => {
                 const isAct = (i === 0);
-                html += `<div onclick="selectMonth('${p}')" class="glass-btn p-6 rounded-3xl mb-4 flex justify-between items-center shadow-sm border ${isAct ? 'bg-yellow-400 border-blue-900' : 'bg-white border-slate-200'}">
+                html += `<div onclick="selectMonth('${p}')" class="glass-btn p-6 rounded-3xl mb-4 flex justify-between items-center shadow-sm border ${isAct ? 'bg-yellow-400 border-blue-950' : 'bg-white border-slate-200'}">
                     <h4 class="text-xl font-black text-blue-950 uppercase italic font-orbitron">${p}</h4>
                     <i class="fas fa-chevron-right text-blue-900/30"></i>
                 </div>`;
@@ -124,7 +173,9 @@
 
         function selectMonth(p) { 
             const [m, a] = p.split(' '); 
-            renderZones(db.filter(r => r.MES.toUpperCase() === m && r.AÑO == a), p); 
+            const monthData = db.filter(r => r.MES.toUpperCase() === m && r.AÑO == a);
+            if(userRole === 'DIRECTIVO') renderZones(monthData, p); 
+            else renderReport(currentUser, p);
         }
 
         function toggleDropdown(id) { 
@@ -135,7 +186,6 @@
         function renderZones(data, period) {
             const zones = [...new Set(data.map(r => r.ZONA || 'SIN ZONA'))];
             const totalGral = data.reduce((acc, r) => acc + n(r.IMPORTE), 0);
-
             let html = `
                 <button onclick="renderPeriods()" class="glass-btn mb-6 text-[10px] font-black text-blue-900 bg-white px-6 py-2 rounded-full border shadow-sm uppercase">← VOLVER AL MENÚ</button>
                 <div id="consolidado-main" class="glass-btn consolidado-premium p-8 rounded-[2.5rem] mb-8 text-white shadow-2xl relative overflow-hidden">
@@ -147,11 +197,8 @@
                         </div>
                     </div>
                     <p class="font-black font-orbitron text-4xl yellow-glow tracking-tighter">$${f(totalGral)}</p>
-                    <div class="dropdown-content">
-                        ${cats.map(c => renderProgressItem(data, c)).join('')}
-                    </div>
-                </div>
-            `;
+                    <div class="dropdown-content">${cats.map(c => renderProgressItem(data, c)).join('')}</div>
+                </div>`;
 
             zones.forEach((z, i) => {
                 const dZ = data.filter(r => (r.ZONA || 'SIN ZONA') === z);
@@ -172,10 +219,7 @@
                          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Total Zona</p>
                          <p class="text-3xl font-black text-blue-900">$${f(realZ)}</p>
                     </div>
-                    <div class="dropdown-content">
-                        <p class="text-xs font-black text-blue-900 mb-4 uppercase italic border-b border-blue-50 pb-2">Progreso de Venta por Línea:</p>
-                        ${cats.map(c => renderProgressItem(dZ, c)).join('')}
-                    </div>
+                    <div class="dropdown-content">${cats.map(c => renderProgressItem(dZ, c)).join('')}</div>
                 </div>`;
             });
             document.getElementById('content-area').innerHTML = html;
@@ -186,7 +230,6 @@
             const real = sum(dataArr, c.r);
             const perc = obj > 0 ? (real / obj) * 100 : (real > 0 ? 100 : 0);
             const falta = obj - real;
-
             return `
             <div class="pdf-card !shadow-none !border-slate-100 !mb-4">
                 <div class="flex justify-between items-start mb-4">
@@ -207,10 +250,7 @@
                     <div style="width: ${Math.min(perc, 100)}%; background: ${c.color}" class="h-full rounded-full"></div>
                 </div>
                 <div class="text-center">
-                    ${obj > 0 ? (falta > 0 ? 
-                        `<p class="text-xs font-black text-red-500 italic uppercase tracking-tighter">Faltan ${falta} pz para la meta</p>` : 
-                        `<p class="text-xs font-black text-green-600 italic uppercase tracking-tighter">¡Meta Superada!</p>`) : ''
-                    }
+                    ${obj > 0 ? (falta > 0 ? `<p class="text-xs font-black text-red-500 italic uppercase tracking-tighter">Faltan ${falta} pz para la meta</p>` : `<p class="text-xs font-black text-green-600 italic uppercase tracking-tighter">¡Meta Superada!</p>`) : ''}
                 </div>
             </div>`;
         }
@@ -241,9 +281,10 @@
         }
 
         function renderDetailedReport(titulo, period, dataArr, totalImporte, isGlobal, zonaNombre = "") {
+            let backAction = isGlobal ? `selectMonth('${period}')` : (userRole === 'DIRECTIVO' ? `renderSellers('${zonaNombre}', '${period}')` : `renderPeriods()`);
             let html = `
             <div class="flex justify-between items-center mb-6">
-                <button onclick="${isGlobal ? `selectMonth('${period}')` : `renderSellers('${zonaNombre}', '${period}')`}" class="text-[10px] font-black text-slate-500 uppercase">← REGRESAR</button>
+                <button onclick="${backAction}" class="text-[10px] font-black text-slate-500 uppercase">← REGRESAR</button>
                 <button onclick="downloadPDF('${titulo}')" class="bg-blue-900 text-yellow-400 px-5 py-2 rounded-xl text-[10px] font-black shadow-lg uppercase tracking-widest">Descargar PDF</button>
             </div>
             <div id="pdf-container">
@@ -271,7 +312,6 @@
         }
         function n(v) { return parseFloat(String(v || "0").replace(/[^0-9.-]+/g,"")) || 0; }
         function f(v) { return Math.round(v).toLocaleString('es-MX'); }
-        
         start();
     </script>
 </body>
